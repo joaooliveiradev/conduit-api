@@ -1,4 +1,4 @@
-import fastifyCors from 'fastify-cors'
+
 import { env } from '@/helpers/env'
 
 import { app } from './server'
@@ -6,7 +6,7 @@ import './modules'
 
 const PORT = env('PORT')
 
-app.register(fastifyCors, { origin: true })
+// app.register(fastifyCors, { origin: true })
 
 export async function start () {
   try {

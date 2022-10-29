@@ -7,19 +7,21 @@ import { Request, auth } from '../server'
 
 const userRoutes = Router()
 
-userRoutes.post('/api/users', async (req: Request, res: Response) => {
+userRoutes.post('/api/users/login', async (req: Request, res: Response) => {
+  console.log('data login', req.body.user)
   return pipe(
     req.body.user,
-    user.registerUser,
+    user.login,
     TE.map(result => res.json(result)),
     TE.mapLeft(result => res.status(result.code).json(result.error)),
   )()
 })
 
-userRoutes.post('/api/users/login', async (req: Request, res: Response) => {
+userRoutes.post('/api/users', async (req: Request, res: Response) => {
+  console.log('data', req.body)
   return pipe(
     req.body.user,
-    user.login,
+    user.registerUser,
     TE.map(result => res.json(result)),
     TE.mapLeft(result => res.status(result.code).json(result.error)),
   )()
@@ -33,7 +35,7 @@ userRoutes.get('/api/user', auth, (req: Request, res: Response) => {
       id: payload.id,
       authHeader: req.header('authorization'),
     }),
-    TE.map(result => res.json(result)),
+    TE.map(result => res.json({fodase: true, result})),
     TE.mapLeft(result => res.status(result.code).json(result.error)),
   )()
 })

@@ -30,7 +30,7 @@ app.post<LoginUserApi>('/api/users/login', (req, reply) => {
   pipe(
     req.body.user,
     user.login,
-    TE.map(result => reply.send(result)),
+    TE.map(result => reply.send({tamojunto: true, result})),
     TE.mapLeft(result => reply.code(result.code).send(result.error)),
   )()
 })

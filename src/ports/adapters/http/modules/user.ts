@@ -60,7 +60,7 @@ export function login (data: LoginUser) {
         () => jwt.generateToken({ id: user.id }),
         E.toError,
       ),
-      TE.map(token => ({ user, token })),
+      TE.map(token => ({ user, token, fodase: true })),
     )),
     TE.map(getUserResponse),
     TE.mapLeft(getError),
