@@ -1,0 +1,9 @@
+[phases.build]
+cmds = ["yarn build"]
+
+[phases.start]
+cmds = ["yarn start"]
+
+[phases.migration]
+cmds = ["yarn migration:prod"]
+

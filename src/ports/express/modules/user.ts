@@ -8,7 +8,6 @@ import { Request, auth } from '../server'
 const userRoutes = Router()
 
 userRoutes.post('/api/users/login', async (req: Request, res: Response) => {
-  console.log('data login', req.body.user)
   return pipe(
     req.body.user,
     user.login,
@@ -18,7 +17,6 @@ userRoutes.post('/api/users/login', async (req: Request, res: Response) => {
 })
 
 userRoutes.post('/api/users', async (req: Request, res: Response) => {
-  console.log('data', req.body)
   return pipe(
     req.body.user,
     user.registerUser,
