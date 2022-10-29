@@ -1,9 +1,10 @@
-[phases.build]
-cmds = ["yarn build"]
+[build]
+builder = "dockerfile"
+buildCommand = "yarn build"
+dockerfilePath = "docker-compose.yml"
 
-[phases.start]
-cmds = ["yarn start"]
-
-[phases.migration]
-cmds = ["yarn migration:prod"]
+[deploy]
+startCommand = "yarn start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
 
