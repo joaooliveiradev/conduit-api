@@ -2,6 +2,7 @@ import fastify, {
   FastifyRequest,
   FastifyReply,
   HookHandlerDoneFunction,
+  RouteGenericInterface,
 } from 'fastify'
 import { pipe } from 'fp-ts/function'
 import * as TE from 'fp-ts/TaskEither'
@@ -15,7 +16,7 @@ type CustomRequest = http.IncomingMessage & {
 
 export const app = fastify<http.Server, CustomRequest>({ logger: true })
 
-type AuthPreValidation = <T>(
+type AuthPreValidation = <T extends RouteGenericInterface>(
   req: FastifyRequest<T, http.Server, CustomRequest>,
   reply: FastifyReply,
   done: HookHandlerDoneFunction,
