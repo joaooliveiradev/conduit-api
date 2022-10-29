@@ -54,7 +54,7 @@ export const getArticlesFromDB = async () => {
 
       return {
         ...rest,
-        favorited: false, // TODO: Mock
+        favorited: false,
         authorId,
         author,
       }
