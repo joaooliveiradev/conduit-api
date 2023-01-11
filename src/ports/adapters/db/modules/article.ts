@@ -1,153 +1,166 @@
-import slugify from 'slugify'
-import { CreateArticle, UpdateArticle } from '@/core/article/types'
-import { CreateComment, CommentOutput } from '@/core/comment/types'
+import slugify from "slugify";
+import { CreateArticle, UpdateArticle } from "@/core/article/types";
+import { CreateComment, CommentOutput } from "@/core/comment/types";
 import {
   ArticlesFilter,
   FavoriteArticleInput,
-} from '@/ports/adapters/http/types'
-import { database as db } from '../db'
-import { DBArticle } from '../types'
+} from "@/ports/adapters/http/types";
+import { database as db } from "../db";
+import { DBArticle } from "../types";
 
-type CreateArticleInDB = (data: CreateArticle) => Promise<DBArticle>
+type CreateArticleInDB = (data: CreateArticle) => Promise<DBArticle>;
 export const createArticleInDB: CreateArticleInDB = async (data) => {
-  const slug = slugify(data.title, { lower: true })
+  const slug = slugify(data.title, { lower: true });
 
   const article = await db.createArticleInDB({
     ...data,
     slug,
-  })
+  });
 
   return {
     ...article,
     favoritesCount: 0,
     author: {
       username: article.author.username,
-      bio: article.author.bio ?? '',
-      image: article.author.image ?? '',
+      bio: article.author.bio ?? "",
+      image: article.author.image ?? "",
       following: false,
     },
-  }
-}
+  };
+};
 
-type UpdateArticleInDB = (data: UpdateArticle) => Promise<DBArticle>
+type UpdateArticleInDB = (data: UpdateArticle) => Promise<DBArticle>;
 export const updateArticleInDB: UpdateArticleInDB = async (data) => {
-  const updatedSlug = slugify(data.title ?? '', { lower: true }) || undefined
+  const updatedSlug = slugify(data.title ?? "", { lower: true }) || undefined;
 
   const article = await db.updateArticleInDB({
     ...data,
     updatedSlug,
-  })
+  });
 
   return {
     ...article,
     author: {
       username: article.author.username,
-      bio: article.author.bio ?? '',
-      image: article.author.image ?? '',
+      bio: article.author.bio ?? "",
+      image: article.author.image ?? "",
       following: false,
     },
-  }
-}
+  };
+};
 
 type FetchArticleInput = {
-  slug: string
-  userId: string
-}
+  slug: string;
+  userId: string;
+};
 
 export const getArticleFromDB = async (data: FetchArticleInput) => {
-  const article = await db.getArticleFromDB(data)
+  const article = await db.getArticleFromDB(data);
 
   return {
     ...article,
     author: {
       username: article.author.username,
-      bio: article.author.bio ?? '',
-      image: article.author.image ?? '',
+      bio: article.author.bio ?? "",
+      image: article.author.image ?? "",
       following: article.author.following,
     },
-  }
-}
+  };
+};
 
 type GetArticlesFromDBInput = {
-  filter: ArticlesFilter
-  userId: string
-}
+  filter: ArticlesFilter;
+  userId: string;
+};
 
 type ArticlesResponse = {
-  articles: DBArticle[]
-  articlesCount: number
-}
+  articles: DBArticle[];
+  articlesCount: number;
+};
 
-type GetArticlesFromDB = (input: GetArticlesFromDBInput) => Promise<ArticlesResponse>
-export const getArticlesFromDB: GetArticlesFromDB = async ({ filter, userId }) => {
-  const result = await db.getArticlesFromDB({ filter, userId })
-
+type GetArticlesFromDB = (
+  input: GetArticlesFromDBInput
+) => Promise<ArticlesResponse>;
+export const getArticlesFromDB: GetArticlesFromDB = async ({
+  filter,
+  userId,
+}) => {
+  const result = await db.getArticlesFromDB({ filter, userId });
   return {
     ...result,
-    articles: result.articles.map(article => ({
+    articles: result.articles.map((article) => ({
       ...article,
       author: {
         username: article.author.username,
-        bio: article.author.bio ?? '',
-        image: article.author.image ?? '',
+        bio: article.author.bio ?? "",
+        image: article.author.image ?? "",
         following: article.author.following,
       },
     })),
-  }
-}
+  };
+};
 
-type GetArticlesFeedFromDB = (input: GetArticlesFromDBInput) => Promise<ArticlesResponse>
-export const getArticlesFeedFromDB: GetArticlesFeedFromDB = async ({ filter, userId }) => {
-  const result = await db.getArticlesFeedFromDB({ filter, userId })
+type GetArticlesFeedFromDB = (
+  input: GetArticlesFromDBInput
+) => Promise<ArticlesResponse>;
+export const getArticlesFeedFromDB: GetArticlesFeedFromDB = async ({
+  filter,
+  userId,
+}) => {
+  const result = await db.getArticlesFeedFromDB({ filter, userId });
 
   return {
     ...result,
-    articles: result.articles.map(article => ({
+    articles: result.articles.map((article) => ({
       ...article,
       author: {
         username: article.author.username,
-        bio: article.author.bio ?? '',
-        image: article.author.image ?? '',
+        bio: article.author.bio ?? "",
+        image: article.author.image ?? "",
         following: true,
       },
     })),
-  }
-}
+  };
+};
 
-export const deleteArticleFromDB = db.deleteArticleFromDB
+export const deleteArticleFromDB = db.deleteArticleFromDB;
 
-type FavoriteArticleInDB = (data: FavoriteArticleInput) => Promise<DBArticle>
+type FavoriteArticleInDB = (data: FavoriteArticleInput) => Promise<DBArticle>;
 export const favoriteArticleInDB: FavoriteArticleInDB = async (data) => {
-  const article = await db.favoriteArticleInDB(data)
+  const article = await db.favoriteArticleInDB(data);
 
   return {
     ...article,
     author: {
       username: article.author.username,
-      bio: article.author.bio ?? '',
-      image: article.author.image ?? '',
+      bio: article.author.bio ?? "",
+      image: article.author.image ?? "",
       following: article.author.following,
     },
-  }
-}
+  };
+};
 
 export const unfavoriteArticleInDB: FavoriteArticleInDB = async (data) => {
-  const article = await db.unfavoriteArticleInDB(data)
+  const article = await db.unfavoriteArticleInDB(data);
 
   return {
     ...article,
     author: {
       username: article.author.username,
-      bio: article.author.bio ?? '',
-      image: article.author.image ?? '',
+      bio: article.author.bio ?? "",
+      image: article.author.image ?? "",
       following: article.author.following,
     },
-  }
-}
+  };
+};
 
-type AddCommentToAnArticleInDB = (data: CreateComment) => Promise<CommentOutput>
-export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB = async (data) => {
-  const comment = await db.addCommentToAnArticleInDB(data)
+type AddCommentToAnArticleInDB = (
+  data: CreateComment
+) => Promise<CommentOutput>;
+export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB = async (
+  data
+) => {
+  const comment = await db.addCommentToAnArticleInDB(data);
 
   return {
     id: comment.id,
@@ -156,34 +169,36 @@ export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB = async (data)
     updatedAt: comment.updatedAt,
     author: {
       username: comment.author.username,
-      bio: comment.author.bio ?? '',
-      image: comment.author.image ?? '',
+      bio: comment.author.bio ?? "",
+      image: comment.author.image ?? "",
       following: false,
     },
-  }
-}
+  };
+};
 
 type GetCommentsFromAnArticleInput = {
-  slug: string
-  userId: string
-}
+  slug: string;
+  userId: string;
+};
 
-export const getCommentsFromAnArticleInDB = async (data: GetCommentsFromAnArticleInput) => {
-  const comments = await db.getCommentsFromAnArticleInDB(data)
+export const getCommentsFromAnArticleInDB = async (
+  data: GetCommentsFromAnArticleInput
+) => {
+  const comments = await db.getCommentsFromAnArticleInDB(data);
 
-  return comments.map(comment => ({
+  return comments.map((comment) => ({
     id: comment.id,
     body: comment.body,
     createdAt: comment.createdAt,
     updatedAt: comment.updatedAt,
     author: {
       username: comment.author.username,
-      bio: comment.author.bio ?? '',
-      image: comment.author.image ?? '',
+      bio: comment.author.bio ?? "",
+      image: comment.author.image ?? "",
       following: comment.author.following,
     },
-  }))
-}
+  }));
+};
 
-export const deleteCommentFromDB = db.deleteCommentFromDB
-export const getTagsFromDB = db.getTagsFromDB
+export const deleteCommentFromDB = db.deleteCommentFromDB;
+export const getTagsFromDB = db.getTagsFromDB;

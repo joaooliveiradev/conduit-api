@@ -1,36 +1,38 @@
-import { Article, Comment, User } from '@prisma/client'
+import { Article, Comment, User } from "@prisma/client";
 import {
   CreateArticleInDB,
   AddCommentToAnArticleInDB,
-} from '@/ports/adapters/db/types'
+} from "@/ports/adapters/db/types";
 import {
   ArticlesFilter,
   PaginationFilter,
   FavoriteArticleInput,
-} from '@/ports/adapters/http/types'
-import { TagOutput } from '@/core/tag/types'
-import { UpdateArticleOutput } from '@/core/article/types'
+} from "@/ports/adapters/http/types";
+import { TagOutput } from "@/core/tag/types";
+import { UpdateArticleOutput } from "@/core/article/types";
 
 import {
   ValidationError,
   UnknownError,
   NotFoundError,
   ForbiddenError,
-} from '@/helpers/errors'
-import { prisma } from '../prisma'
+} from "@/helpers/errors";
+import { prisma } from "../prisma";
 
-type ArticleReturned = Omit<Article, 'createdAt' | 'updatedAt'> & {
-  createdAt: string
-  updatedAt: string
-  author: User
-  tagList: string[]
-}
+type ArticleReturned = Omit<Article, "createdAt" | "updatedAt"> & {
+  createdAt: string;
+  updatedAt: string;
+  author: User;
+  tagList: string[];
+};
 
-export const createArticleInDB: CreateArticleInDB<ArticleReturned> = async (data) => {
+export const createArticleInDB: CreateArticleInDB<ArticleReturned> = async (
+  data
+) => {
   await prisma.tag.createMany({
-    data: (data.tagList ?? []).map(name => ({ name })),
+    data: (data.tagList ?? []).map((name) => ({ name })),
     skipDuplicates: true,
-  })
+  });
 
   try {
     const article = await prisma.article.create({
@@ -40,7 +42,7 @@ export const createArticleInDB: CreateArticleInDB<ArticleReturned> = async (data
         description: data.description,
         body: data.body,
         tagList: {
-          connect: (data.tagList ?? []).map(name => ({ name })),
+          connect: (data.tagList ?? []).map((name) => ({ name })),
         },
         author: {
           connect: { id: data.authorId },
@@ -50,24 +52,24 @@ export const createArticleInDB: CreateArticleInDB<ArticleReturned> = async (data
         author: true,
         tagList: true,
       },
-    })
+    });
 
     return {
       ...article,
       favorited: false,
       favoritesCount: 0,
-      tagList: article.tagList.map(tag => tag.name),
+      tagList: article.tagList.map((tag) => tag.name),
       createdAt: article.createdAt.toISOString(),
       updatedAt: article.updatedAt.toISOString(),
-    }
+    };
   } catch (e) {
-    throw new ValidationError(`The article "${data.title}" already exists`)
+    throw new ValidationError(`The article "${data.title}" already exists`);
   }
-}
+};
 
 type UpdateArticleInput = UpdateArticleOutput & {
-  updatedSlug?: string | undefined
-}
+  updatedSlug?: string | undefined;
+};
 export const updateArticleInDB = async (data: UpdateArticleInput) => {
   const articleToUpdate = await prisma.article.findUnique({
     where: {
@@ -80,14 +82,16 @@ export const updateArticleInDB = async (data: UpdateArticleInput) => {
         },
       },
     },
-  })
+  });
 
   if (!articleToUpdate) {
-    throw new NotFoundError(`The article ${data.slug} does not exist`)
+    throw new NotFoundError(`The article ${data.slug} does not exist`);
   }
 
   if (articleToUpdate.author.id !== data.authorId) {
-    throw new ForbiddenError(`You can't update ${data.slug} article. It's not yours. Get out!`)
+    throw new ForbiddenError(
+      `You can't update ${data.slug} article. It's not yours. Get out!`
+    );
   }
 
   try {
@@ -115,9 +119,9 @@ export const updateArticleInDB = async (data: UpdateArticleInput) => {
           },
         },
       },
-    })
+    });
 
-    const { _count, favoritedArticles, ...article } = updatedArticle
+    const { _count, favoritedArticles, ...article } = updatedArticle;
 
     return {
       ...article,
@@ -127,23 +131,23 @@ export const updateArticleInDB = async (data: UpdateArticleInput) => {
       },
       favorited: favoritedArticles.length > 0,
       favoritesCount: _count ? _count.favoritedArticles : 0,
-      tagList: article.tagList.map(tag => tag.name),
+      tagList: article.tagList.map((tag) => tag.name),
       createdAt: article.createdAt.toISOString(),
       updatedAt: article.updatedAt.toISOString(),
-    }
+    };
   } catch (e) {
     if (e instanceof Error) {
-      throw new ValidationError(e.message)
+      throw new ValidationError(e.message);
     }
 
-    throw new UnknownError()
+    throw new UnknownError();
   }
-}
+};
 
 type FetchArticleInput = {
-  slug: string
-  userId: string
-}
+  slug: string;
+  userId: string;
+};
 export const getArticleFromDB = async ({ slug, userId }: FetchArticleInput) => {
   const singleArticle = await prisma.article.findUnique({
     where: {
@@ -171,13 +175,13 @@ export const getArticleFromDB = async ({ slug, userId }: FetchArticleInput) => {
         },
       },
     },
-  })
+  });
 
   if (!singleArticle) {
-    throw new NotFoundError(`Article ${slug} does not exist`)
+    throw new NotFoundError(`Article ${slug} does not exist`);
   }
 
-  const { _count, favoritedArticles, ...article } = singleArticle
+  const { _count, favoritedArticles, ...article } = singleArticle;
 
   return {
     ...article,
@@ -187,24 +191,27 @@ export const getArticleFromDB = async ({ slug, userId }: FetchArticleInput) => {
     },
     favorited: favoritedArticles.length > 0,
     favoritesCount: _count ? _count.favoritedArticles : 0,
-    tagList: article.tagList.map(tag => tag.name),
+    tagList: article.tagList.map((tag) => tag.name),
     createdAt: article.createdAt.toISOString(),
     updatedAt: article.updatedAt.toISOString(),
-  }
-}
+  };
+};
 
 type GetArticlesFromDBInput = {
-  filter?: ArticlesFilter
-  userId: string
-}
-export const getArticlesFromDB = async ({ filter, userId }: GetArticlesFromDBInput) => {
+  filter?: ArticlesFilter;
+  userId: string;
+};
+export const getArticlesFromDB = async ({
+  filter,
+  userId,
+}: GetArticlesFromDBInput) => {
   const where = {
     AND: [
       authorFilter(filter?.author),
       tagListFilter(filter?.tag),
       favoritedFilter(filter?.favorited),
     ],
-  }
+  };
 
   const articlesQuery = prisma.article.findMany({
     take: Number(filter?.limit ?? 20),
@@ -213,7 +220,7 @@ export const getArticlesFromDB = async ({ filter, userId }: GetArticlesFromDBInp
     where,
 
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
 
     include: {
@@ -238,17 +245,17 @@ export const getArticlesFromDB = async ({ filter, userId }: GetArticlesFromDBInp
         },
       },
     },
-  })
+  });
 
   const [articles, articlesCount] = await prisma.$transaction([
     articlesQuery,
     prisma.article.count({ where }),
-  ])
+  ]);
 
   return {
     articlesCount,
-    articles: articles.map(article => {
-      const { _count, favoritedArticles, ...rest } = article
+    articles: articles.map((article) => {
+      const { _count, favoritedArticles, ...rest } = article;
       return {
         ...rest,
         author: {
@@ -260,16 +267,19 @@ export const getArticlesFromDB = async ({ filter, userId }: GetArticlesFromDBInp
         tagList: article.tagList.map(({ name }) => name),
         createdAt: article.createdAt.toISOString(),
         updatedAt: article.updatedAt.toISOString(),
-      }
+      };
     }),
-  }
-}
+  };
+};
 
 type GetArticlesFeedFromDBInput = {
-  filter?: PaginationFilter
-  userId: string
-}
-export const getArticlesFeedFromDB = async ({ filter, userId }: GetArticlesFeedFromDBInput) => {
+  filter?: PaginationFilter;
+  userId: string;
+};
+export const getArticlesFeedFromDB = async ({
+  filter,
+  userId,
+}: GetArticlesFeedFromDBInput) => {
   const following = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -281,15 +291,15 @@ export const getArticlesFeedFromDB = async ({ filter, userId }: GetArticlesFeedF
         },
       },
     },
-  })
+  });
 
   const where = {
     author: {
       id: {
-        in: following?.following.map(f => f.followingId),
+        in: following?.following.map((f) => f.followingId),
       },
     },
-  }
+  };
 
   const articlesQuery = prisma.article.findMany({
     take: Number(filter?.limit ?? 20),
@@ -298,7 +308,7 @@ export const getArticlesFeedFromDB = async ({ filter, userId }: GetArticlesFeedF
     where,
 
     orderBy: {
-      createdAt: 'desc',
+      createdAt: "desc",
     },
 
     include: {
@@ -315,17 +325,17 @@ export const getArticlesFeedFromDB = async ({ filter, userId }: GetArticlesFeedF
         },
       },
     },
-  })
+  });
 
   const [articles, articlesCount] = await prisma.$transaction([
     articlesQuery,
     prisma.article.count({ where }),
-  ])
+  ]);
 
   return {
     articlesCount,
-    articles: articles.map(article => {
-      const { _count, favoritedArticles, ...rest } = article
+    articles: articles.map((article) => {
+      const { _count, favoritedArticles, ...rest } = article;
       return {
         ...rest,
         favorited: favoritedArticles.length > 0,
@@ -333,17 +343,17 @@ export const getArticlesFeedFromDB = async ({ filter, userId }: GetArticlesFeedF
         tagList: article.tagList.map(({ name }) => name),
         createdAt: article.createdAt.toISOString(),
         updatedAt: article.updatedAt.toISOString(),
-      }
+      };
     }),
-  }
-}
+  };
+};
 
 type DeleteArticleInput = {
-  slug: string
-  userId: string
-}
+  slug: string;
+  userId: string;
+};
 
-export async function deleteArticleFromDB (data: DeleteArticleInput) {
+export async function deleteArticleFromDB(data: DeleteArticleInput) {
   const articleToDelete = await prisma.article.findUnique({
     where: {
       slug: data.slug,
@@ -355,10 +365,10 @@ export async function deleteArticleFromDB (data: DeleteArticleInput) {
         },
       },
     },
-  })
+  });
 
   if (!articleToDelete) {
-    throw new NotFoundError(`The article ${data.slug} does not exist`)
+    throw new NotFoundError(`The article ${data.slug} does not exist`);
   }
 
   if (articleToDelete.author.id !== data.userId) {
@@ -369,10 +379,10 @@ export async function deleteArticleFromDB (data: DeleteArticleInput) {
     where: {
       slug: data.slug,
     },
-  })
+  });
 }
 
-function authorFilter (author?: string) {
+function authorFilter(author?: string) {
   return {
     author: {
       username: author,
@@ -380,17 +390,21 @@ function authorFilter (author?: string) {
   }
 }
 
-function tagListFilter (tag?: string) {
-  return {
+function tagListFilter(tag?: string) {
+  const withTagFilter = {
     tagList: {
       some: {
         name: tag,
       },
     },
-  }
+  };
+
+  const withoutTagFilter = {};
+
+  return tag ? withTagFilter : withoutTagFilter;
 }
 
-function favoritedFilter (favorited?: string) {
+function favoritedFilter(favorited?: string) {
   const withFavoritedFilter = {
     favoritedArticles: {
       some: {
@@ -404,8 +418,8 @@ function favoritedFilter (favorited?: string) {
   const withoutFavoritedFilter = {}
 
   return favorited
-    ? withFavoritedFilter
-    : withoutFavoritedFilter
+  ? withFavoritedFilter
+  : withoutFavoritedFilter
 }
 
 export const favoriteArticleInDB = async (data: FavoriteArticleInput) => {
@@ -438,9 +452,9 @@ export const favoriteArticleInDB = async (data: FavoriteArticleInput) => {
           },
         },
       },
-    })
+    });
 
-    const { _count, ...article } = articleFromDB
+    const { _count, ...article } = articleFromDB;
 
     return {
       ...article,
@@ -453,19 +467,25 @@ export const favoriteArticleInDB = async (data: FavoriteArticleInput) => {
       tagList: article.tagList.map(({ name }) => name),
       createdAt: article.createdAt.toISOString(),
       updatedAt: article.updatedAt.toISOString(),
-    }
+    };
   } catch (error) {
     if (!(error instanceof Error)) {
-      throw new UnknownError()
+      throw new UnknownError();
     }
 
-    if (error.message.includes('Unique constraint failed on the fields: (`userId`,`articleId`)')) {
-      throw new ValidationError(`The article ${data.slug} is already a favorite`)
+    if (
+      error.message.includes(
+        "Unique constraint failed on the fields: (`userId`,`articleId`)"
+      )
+    ) {
+      throw new ValidationError(
+        `The article ${data.slug} is already a favorite`
+      );
     }
 
-    throw new ValidationError(`Error trying to favorite article ${data.slug}`)
+    throw new ValidationError(`Error trying to favorite article ${data.slug}`);
   }
-}
+};
 
 export const unfavoriteArticleInDB = async (data: FavoriteArticleInput) => {
   const articleFromDB = await prisma.article.update({
@@ -496,9 +516,9 @@ export const unfavoriteArticleInDB = async (data: FavoriteArticleInput) => {
         },
       },
     },
-  })
+  });
 
-  const { _count, ...article } = articleFromDB
+  const { _count, ...article } = articleFromDB;
 
   return {
     ...article,
@@ -511,16 +531,18 @@ export const unfavoriteArticleInDB = async (data: FavoriteArticleInput) => {
     tagList: article.tagList.map(({ name }) => name),
     createdAt: article.createdAt.toISOString(),
     updatedAt: article.updatedAt.toISOString(),
-  }
-}
+  };
+};
 
-type CommentReturned = Omit<Comment, 'createdAt' | 'updatedAt'> & {
-  createdAt: string
-  updatedAt: string
-  author: User
-}
+type CommentReturned = Omit<Comment, "createdAt" | "updatedAt"> & {
+  createdAt: string;
+  updatedAt: string;
+  author: User;
+};
 
-export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB<CommentReturned> = async (data) => {
+export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB<
+  CommentReturned
+> = async (data) => {
   const comment = await prisma.comment.create({
     data: {
       body: data.body,
@@ -534,21 +556,23 @@ export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB<CommentReturne
     include: {
       author: true,
     },
-  })
+  });
 
   return {
     ...comment,
     createdAt: comment.createdAt.toISOString(),
     updatedAt: comment.updatedAt.toISOString(),
-  }
-}
+  };
+};
 
 type GetCommentsFromAnArticleInput = {
-  slug: string
-  userId: string
-}
+  slug: string;
+  userId: string;
+};
 
-export const getCommentsFromAnArticleInDB = async (data: GetCommentsFromAnArticleInput) => {
+export const getCommentsFromAnArticleInDB = async (
+  data: GetCommentsFromAnArticleInput
+) => {
   const allComments = await prisma.article.findUnique({
     where: {
       slug: data.slug,
@@ -568,13 +592,13 @@ export const getCommentsFromAnArticleInDB = async (data: GetCommentsFromAnArticl
         },
       },
     },
-  })
+  });
 
   if (!allComments) {
-    return []
+    return [];
   }
 
-  return allComments.comments.map(comment => ({
+  return allComments.comments.map((comment) => ({
     ...comment,
     author: {
       ...comment.author,
@@ -582,14 +606,14 @@ export const getCommentsFromAnArticleInDB = async (data: GetCommentsFromAnArticl
     },
     createdAt: comment.createdAt.toISOString(),
     updatedAt: comment.updatedAt.toISOString(),
-  }))
-}
+  }));
+};
 
 type DeleteCommentInput = {
-  slug: string
-  commentId: number
-  userId: string
-}
+  slug: string;
+  commentId: number;
+  userId: string;
+};
 
 export const deleteCommentFromDB = async (data: DeleteCommentInput) => {
   const commentToDelete = await prisma.comment.findUnique({
@@ -609,24 +633,28 @@ export const deleteCommentFromDB = async (data: DeleteCommentInput) => {
         },
       },
     },
-  })
+  });
 
   if (!commentToDelete) {
-    throw new NotFoundError(`The comment ID ${data.commentId} does not exist on article ${data.slug}`)
+    throw new NotFoundError(
+      `The comment ID ${data.commentId} does not exist on article ${data.slug}`
+    );
   }
 
   if (commentToDelete.author.id !== data.userId) {
-    throw new ForbiddenError(`You can't delete the comment with ID ${data.commentId}. It's not yours. Get out!`)
+    throw new ForbiddenError(
+      `You can't delete the comment with ID ${data.commentId}. It's not yours. Get out!`
+    );
   }
 
   await prisma.comment.delete({
     where: {
       id: data.commentId,
     },
-  })
-}
+  });
+};
 
 export const getTagsFromDB = async (): Promise<TagOutput[]> => {
-  const tags = await prisma.tag.findMany()
-  return tags.map(tag => tag.name)
-}
+  const tags = await prisma.tag.findMany();
+  return tags.map((tag) => tag.name);
+};
