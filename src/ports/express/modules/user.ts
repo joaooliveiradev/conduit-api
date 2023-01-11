@@ -33,7 +33,7 @@ userRoutes.get('/api/user', auth, (req: Request, res: Response) => {
       id: payload.id,
       authHeader: req.header('authorization'),
     }),
-    TE.map(result => res.json({fodase: true, result})),
+    TE.map(result => res.json(result)),
     TE.mapLeft(result => res.status(result.code).json(result.error)),
   )()
 })

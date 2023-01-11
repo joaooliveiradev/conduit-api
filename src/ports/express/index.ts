@@ -22,7 +22,7 @@ app.use(profileRoutes)
 
 export function start () {
   return new Promise((resolve) => {
-    app.listen(PORT || 8080, () => {
+    app.listen(PORT, () => {
       console.log(`Server is listening on port ${PORT}`)
       resolve(null)
     })
