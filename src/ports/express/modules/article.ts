@@ -22,9 +22,9 @@ articleRoutes.post(
       data,
       article.registerArticle,
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.put(
@@ -44,9 +44,9 @@ articleRoutes.put(
       data,
       article.updateArticle,
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.get("/api/articles/feed", auth, (req: Request, res: Response) => {
@@ -58,7 +58,7 @@ articleRoutes.get("/api/articles/feed", auth, (req: Request, res: Response) => {
       userId: payload.id,
     }),
     TE.map((result) => res.json(result)),
-    TE.mapLeft((result) => res.status(result.code).json(result.error))
+    TE.mapLeft((result) => res.status(result.code).json(result.error)),
   )();
 });
 
@@ -75,9 +75,9 @@ articleRoutes.get(
         userId: payload.id,
       }),
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.get("/api/articles", tryAuth, (req: Request, res: Response) => {
@@ -89,7 +89,7 @@ articleRoutes.get("/api/articles", tryAuth, (req: Request, res: Response) => {
       userId: payload.id,
     }),
     TE.map((result) => res.json(result)),
-    TE.mapLeft((result) => res.status(result.code).json(result.error))
+    TE.mapLeft((result) => res.status(result.code).json(result.error)),
   )();
 });
 
@@ -106,9 +106,9 @@ articleRoutes.delete(
         userId: payload.id,
       }),
       TE.map(() => res.send()),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.post(
@@ -124,9 +124,9 @@ articleRoutes.post(
         slug: req.params[slugProp] ?? "",
       }),
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.delete(
@@ -142,9 +142,9 @@ articleRoutes.delete(
         slug: req.params[slugProp] ?? "",
       }),
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.post(
@@ -164,9 +164,9 @@ articleRoutes.post(
       data,
       article.addCommentToAnArticle,
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.get(
@@ -185,9 +185,9 @@ articleRoutes.get(
       data,
       article.getCommentsFromAnArticle,
       TE.map((result) => res.json(result)),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.delete(
@@ -208,16 +208,16 @@ articleRoutes.delete(
       data,
       article.deleteComment,
       TE.map(() => res.send()),
-      TE.mapLeft((result) => res.status(result.code).json(result.error))
+      TE.mapLeft((result) => res.status(result.code).json(result.error)),
     )();
-  }
+  },
 );
 
 articleRoutes.get("/api/tags", (_req, res) => {
   pipe(
     article.getTags(),
     TE.map((result) => res.json(result)),
-    TE.mapLeft((result) => res.status(result.code).json(result.error))
+    TE.mapLeft((result) => res.status(result.code).json(result.error)),
   )();
 });
 

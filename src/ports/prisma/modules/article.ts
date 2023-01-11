@@ -27,7 +27,7 @@ type ArticleReturned = Omit<Article, "createdAt" | "updatedAt"> & {
 };
 
 export const createArticleInDB: CreateArticleInDB<ArticleReturned> = async (
-  data
+  data,
 ) => {
   await prisma.tag.createMany({
     data: (data.tagList ?? []).map((name) => ({ name })),
@@ -90,7 +90,7 @@ export const updateArticleInDB = async (data: UpdateArticleInput) => {
 
   if (articleToUpdate.author.id !== data.authorId) {
     throw new ForbiddenError(
-      `You can't update ${data.slug} article. It's not yours. Get out!`
+      `You can't update ${data.slug} article. It's not yours. Get out!`,
     );
   }
 
@@ -475,11 +475,11 @@ export const favoriteArticleInDB = async (data: FavoriteArticleInput) => {
 
     if (
       error.message.includes(
-        "Unique constraint failed on the fields: (`userId`,`articleId`)"
+        "Unique constraint failed on the fields: (`userId`,`articleId`)",
       )
     ) {
       throw new ValidationError(
-        `The article ${data.slug} is already a favorite`
+        `The article ${data.slug} is already a favorite`,
       );
     }
 
@@ -571,7 +571,7 @@ type GetCommentsFromAnArticleInput = {
 };
 
 export const getCommentsFromAnArticleInDB = async (
-  data: GetCommentsFromAnArticleInput
+  data: GetCommentsFromAnArticleInput,
 ) => {
   const allComments = await prisma.article.findUnique({
     where: {
@@ -637,13 +637,13 @@ export const deleteCommentFromDB = async (data: DeleteCommentInput) => {
 
   if (!commentToDelete) {
     throw new NotFoundError(
-      `The comment ID ${data.commentId} does not exist on article ${data.slug}`
+      `The comment ID ${data.commentId} does not exist on article ${data.slug}`,
     );
   }
 
   if (commentToDelete.author.id !== data.userId) {
     throw new ForbiddenError(
-      `You can't delete the comment with ID ${data.commentId}. It's not yours. Get out!`
+      `You can't delete the comment with ID ${data.commentId}. It's not yours. Get out!`,
     );
   }
 

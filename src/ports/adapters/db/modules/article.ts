@@ -158,7 +158,7 @@ type AddCommentToAnArticleInDB = (
   data: CreateComment
 ) => Promise<CommentOutput>;
 export const addCommentToAnArticleInDB: AddCommentToAnArticleInDB = async (
-  data
+  data,
 ) => {
   const comment = await db.addCommentToAnArticleInDB(data);
 
@@ -182,7 +182,7 @@ type GetCommentsFromAnArticleInput = {
 };
 
 export const getCommentsFromAnArticleInDB = async (
-  data: GetCommentsFromAnArticleInput
+  data: GetCommentsFromAnArticleInput,
 ) => {
   const comments = await db.getCommentsFromAnArticleInDB(data);
 
